@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
+using UnityEngine.UI;
+using UnityEngine.Video;
+using UniRx;
 
 public class TipPanel : MonoBehaviour
 {
@@ -61,6 +65,12 @@ public class TipPanel : MonoBehaviour
     [SerializeField]
     private float ExtraWaitTime = 7f;
 
+    [SerializeField]
+    private VideoPlayer player;
+
+    [SerializeField]
+    private Image img;
+
     private Coroutine ShowTipCoroutine;
 
     public bool CanBeTracked = true;
@@ -75,6 +85,12 @@ public class TipPanel : MonoBehaviour
     private AnimationCurve AberationCurve;
     public float CurrentAberation;
 
+    [SerializeField]
+    private Animator videoQuad;
+
+    private List<Sprite> images = new List<Sprite>();
+    private List<string> videos = new List<string>();
+
     // Start is called before the first frame update
     void Start()
     {
@@ -85,7 +101,56 @@ public class TipPanel : MonoBehaviour
         volume = Camera.main.GetComponent<PostProcessVolume>();
 
         volume.profile.TryGetSettings(out abberation);
+        
+        LoadResources();
 
+        player.prepareCompleted += PrepareCompleted;
+    }
+
+    private void PrepareCompleted(VideoPlayer source)
+    {
+        videoQuad.SetBool("Show", true);
+        Debug.Log((float)source.length);
+        player.Play();
+
+        Observable.Timer(TimeSpan.FromSeconds((float)source.length - 1f)).Subscribe(v=>
+        {
+            Debug.Log("Video completed");
+            GetComponent<Animator>().SetBool("Tip", false);
+            OpenEyes();
+            ShowTipCoroutine = null;
+            CanBeTracked = true;
+            Body.PoseStateChanged += PoseStateChanged;
+            Debug.Log("HIde");
+            videoQuad.SetBool("Show", false);
+        }).AddTo(this);
+       
+    }
+
+    private void LoadResources()
+    {
+        string videoFolderPath = Path.Combine(Application.persistentDataPath, "Videos");
+        string imagesFolderPath = Path.Combine(Application.persistentDataPath, "Images");
+
+        if (!Directory.Exists(videoFolderPath))
+        {
+            Directory.CreateDirectory(videoFolderPath);
+        }
+        if (!Directory.Exists(imagesFolderPath))
+        {
+            Directory.CreateDirectory(imagesFolderPath);
+        }
+
+        videos = Directory.GetFiles(videoFolderPath).ToList();
+        string[] imagesPathes = Directory.GetFiles(imagesFolderPath);
+
+        foreach (string s in imagesPathes)
+        {
+            byte[] bytes = File.ReadAllBytes(s);
+            Texture2D texture = new Texture2D(1, 1);
+            texture.LoadImage(bytes);
+            images.Add(Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f)));
+        }    
     }
 
     private void Update()
@@ -154,19 +219,77 @@ public class TipPanel : MonoBehaviour
     [ContextMenu("test")]
     public void Show()
     {
-        if (ShowTipCoroutine!=null)
+        Debug.Log(ShowTipCoroutine);
+
+        if (ShowTipCoroutine!=null || CanBeTracked == false)
         {
-            StopCoroutine(ShowTipCoroutine);
+            if (ShowTipCoroutine != null)
+            {
+                StopCoroutine(ShowTipCoroutine);
+            }
         }
         else
         {
             string tip = Tips.Tips.OrderBy(t => Guid.NewGuid()).FirstOrDefault();
 
-            ShowTipCoroutine = StartCoroutine(ShowTip(tip));
-        }
+            int v = 1; UnityEngine.Random.Range(1, 3);
 
-        
+            switch (v)
+            {
+                case 0:
+                    ShowTipCoroutine = StartCoroutine(ShowTip(tip));
+                    break;
+                case 1:
+                    Sprite sprite = images.OrderBy(ss => Guid.NewGuid()).First();
+                    ShowImage(sprite);
+                    break;
+                case 2:
+                    ShowVideoTip(videos.OrderBy(s=>Guid.NewGuid()).First());
+                    break;
+            }         
+        }
     }
+
+    private void ShowImage(Sprite sprite)
+    {
+        Body.PoseStateChanged -= PoseStateChanged;
+        CanBeTracked = false;
+        GetComponent<Animator>().SetBool("Tip", true);
+
+        img.sprite = sprite;
+        Debug.Log(images.IndexOf(img.sprite));
+
+       
+
+        img.GetComponent<Animator>().SetBool("Show", true);
+        Observable.Timer(TimeSpan.FromSeconds(5f)).Subscribe(v=>
+        {
+            Debug.Log("hide");
+            img.GetComponent<Animator>().SetBool("Show", false);
+            GetComponent<Animator>().SetBool("Tip", false);
+            Observable.Timer(TimeSpan.FromSeconds(1f)).Subscribe(v =>
+            {
+                Debug.Log("open eyes");
+                OpenEyes();
+                ShowTipCoroutine = null;
+                CanBeTracked = true;
+                Body.PoseStateChanged += PoseStateChanged;
+            }).AddTo(this);
+        }).AddTo(this);
+    }
+
+    private void ShowVideoTip(string videoUrl)
+    {
+        Body.PoseStateChanged -= PoseStateChanged;
+        CanBeTracked = false;
+
+        GetComponent<Animator>().SetBool("Tip", true);
+
+        player.url = videoUrl;
+        player.Prepare();
+    }
+
+
 
     private IEnumerator ShowTip(string text)
     {
@@ -211,17 +334,12 @@ public class TipPanel : MonoBehaviour
 
         ShowTipCoroutine = null;
 
-
-
         CanBeTracked = true;
         Body.PoseStateChanged += PoseStateChanged;
     }
 
     private string Distort(string nw)
     {
-        Debug.Log(Distortion);
-
-
         Queue<bool> distoreLetters = new Queue<bool>();
         for (int i = 0; i < nw.Length * (1f-Distortion) + 1; i++)
         {

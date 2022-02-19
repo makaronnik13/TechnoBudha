@@ -46,7 +46,7 @@ public class EyesController : MonoBehaviour
                     Animator.SetTrigger("Blink");
                 }
 
-                
+              /*  
         if (Animator.GetFloat("Focus")>0f)
         {
             Animator.SetFloat("Focus", 0, 0.5f, 0.5f);
@@ -54,7 +54,7 @@ public class EyesController : MonoBehaviour
         else
         {
             Animator.SetFloat("Focus", 1, 0.5f, 0.5f);
-        }
+        }*/
         
        
     }
