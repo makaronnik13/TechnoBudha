@@ -1,0 +1,22 @@
+fileFormatVersion: 2
+guid: 7c650963384e2a0408eae66c181020bd
+TrueTypeFontImporter:
+  externalObjects: {}
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontNames:
+  - Hellenica
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: 3019d2e159c43ca4c8c6564769e137cc, type: 3}
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  useLegacyBoundsCalculation: 0
+  shouldRoundAdvanceValue: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

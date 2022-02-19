@@ -1,0 +1,22 @@
+fileFormatVersion: 2
+guid: a5a95145997514b4bb649bcd9badeca1
+TrueTypeFontImporter:
+  externalObjects: {}
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontNames:
+  - Hina-Mincho
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: 034bc7449c34ec14bbe596da3bb808c2, type: 3}
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  useLegacyBoundsCalculation: 0
+  shouldRoundAdvanceValue: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
