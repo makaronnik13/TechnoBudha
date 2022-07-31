@@ -337,7 +337,21 @@ public class TipPanel : MonoBehaviour
         GetComponent<Animator>().SetBool("Tip", true);
 
         img.sprite = sprite;
-       
+
+        float x = sprite.texture.width;
+        float y = sprite.texture.height;
+        float size = 0;
+        if (x>y)
+        {
+            size = Screen.width*0.9f;
+        }
+        else
+        {
+            size = Screen.height*0.9f;
+        }
+
+        img.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Screen.width*0.9f);
+        img.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Screen.height*0.9f);
 
         img.GetComponent<Animator>().SetBool("Show", true);
         Observable.Timer(TimeSpan.FromSeconds(5f)).Subscribe(v=>
