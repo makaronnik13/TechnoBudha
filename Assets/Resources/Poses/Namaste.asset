@@ -13,43 +13,18 @@ MonoBehaviour:
   m_Name: Namaste
   m_EditorClassIdentifier: 
   Angles:
-  - J1: 20
-    J2: 8
-    M: 9
-    needAngle: 72.9524
-  - J1: 20
-    J2: 4
-    M: 5
-    needAngle: 79.079666
-  - J1: 3
-    J2: 20
-    M: 4
-    needAngle: 109.28492
-  - J1: 3
-    J2: 20
-    M: 8
-    needAngle: 86.55911
   - J1: 4
-    J2: 6
-    M: 5
-    needAngle: 119.69377
+    J2: 5
+    M: 7
+    needAngle: 54.19771
+    weight: 1
   - J1: 8
-    J2: 10
-    M: 9
-    needAngle: 133.48624
+    J2: 9
+    M: 22
+    needAngle: -43.224426
+    weight: 1
   Disctances:
   - J1: 7
     J2: 11
-    needDistance: 0.17076638
-  - J1: 11
-    J2: 3
-    needDistance: 0.5342375
-  - J1: 7
-    J2: 3
-    needDistance: 0.5342375
-  - J1: 21
-    J2: 23
-    needDistance: 0.5342375
-  - J1: 24
-    J2: 22
-    needDistance: 0.5342375
+    needDistance: 0.61110497
+    weight: 1

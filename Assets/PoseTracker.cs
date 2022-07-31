@@ -4,23 +4,27 @@ using UnityEngine;
 using UniRx;
 using System;
 using UnityEngine.UI;
+using System.Linq;
 
 public class PoseTracker : MonoBehaviour
 {
     [SerializeField]
-    private BodySourceManager bodySourceManager;
+    private BodyVisualizer bodyVisualizer;
 
     [SerializeField]
     private Slider progressSlider;
+
+    public float TrackTime = 1f;
+    public float UntrackTime = 1f;
 
     public ReactiveProperty<bool> poseTracked = new ReactiveProperty<bool>(false);
     public ReactiveProperty<bool> bodyTracked = new ReactiveProperty<bool>(false);
     private ReactiveProperty<float> trackingVolume = new ReactiveProperty<float>(0);
 
-    private IDisposable checkPoseDisposable;
-
     [SerializeField]
     private PoseAsset Pose;
+
+    private BodyView trackedBody;
 
     private bool recording = false;
 
@@ -28,7 +32,7 @@ public class PoseTracker : MonoBehaviour
 
     private void Start()
     {
-        trackingVolume.Subscribe(v=>
+        trackingVolume.Subscribe(v =>
         {
             progressSlider.value = v;
 
@@ -41,94 +45,22 @@ public class PoseTracker : MonoBehaviour
             poseTracked.Value = false;
         }).AddTo(this);
 
-        bodySourceManager.trackingBody.Subscribe(body=>
+        bodyVisualizer.OnFirstEntered.Subscribe(b =>
         {
-            if (recording)
-            {
-                return;
-            }
-            if (checkPoseDisposable!=null)
-            {
-                checkPoseDisposable.Dispose();
-                checkPoseDisposable = null;
-            }
+            trackedBody = b;
+        }).AddTo(this);
 
-            bodyTracked.Value = body != null;
-
-
-            if (body!=null)
-            {
-               checkPoseDisposable = Observable.EveryUpdate().Subscribe(_=>
-               {
-                   if (Tracking && !recording)
-                   {
-
-                       float difAngle = 0;
-                       float difDistance = 0;
-
-                       foreach (BodyPartAngle ang in Pose.Angles)
-                       {
-
-                           Windows.Kinect.Joint J1 = bodySourceManager.trackingBody.Value.Joints[ang.J1];
-                           Windows.Kinect.Joint J2 = bodySourceManager.trackingBody.Value.Joints[ang.J2];
-                           Windows.Kinect.Joint M = bodySourceManager.trackingBody.Value.Joints[ang.M];
-
-                           Vector3 P1 = GetVector3FromJoint(J1);
-                           Vector3 P2 = GetVector3FromJoint(J2);
-                           Vector3 PM = GetVector3FromJoint(M);
-
-
-                           float angle = Vector3.SignedAngle(P1 - PM, P2 - PM, Vector3.up);
-
-
-                           //ang.needAngle = Mathf.Lerp(ang.needAngle, angle, Time.deltaTime);
-                           difAngle += Mathf.Abs(angle - ang.needAngle);
-                       }
-
-                       difAngle /= Pose.Angles.Count;
-
-                       foreach (BodyPartDistance dis in Pose.Disctances)
-                       {
-                           Windows.Kinect.Joint J1 = bodySourceManager.trackingBody.Value.Joints[dis.J1];
-                           Windows.Kinect.Joint J2 = bodySourceManager.trackingBody.Value.Joints[dis.J2];
-
-                           float actual = Vector3.Distance(GetVector3FromJoint(J1), GetVector3FromJoint(J2));
-                           difDistance += Mathf.Abs(dis.needDistance - actual);
-                       }
-                       difDistance /= Pose.Disctances.Count;
-
-                       Debug.Log(difDistance+"/"+difAngle);
-
-                       if (difDistance < 0.5f && difAngle < 15)
-                       {
-                           trackingVolume.Value += Time.deltaTime * 0.5f;
-                       }
-                       else
-                       {
-                           trackingVolume.Value -= Time.deltaTime * 0.3f;
-                       }
-
-                       trackingVolume.Value = Mathf.Clamp(trackingVolume.Value, 0f, 1f);
-
-                   }
-               });
-            }
-            else
-            {
-                trackingVolume.Value = 0;
-            }
-        });
+        bodyVisualizer.OnLastExit.Subscribe(_ =>
+        {
+            trackedBody = null;
+        }).AddTo(this);
     }
 
-    private Vector3 GetVector3FromJoint(Windows.Kinect.Joint joint)
-    {
-        return new Vector3(joint.Position.X, joint.Position.Y, joint.Position.Z);
-    }
 
     [ContextMenu("record")]
     void Record()
     {
-        if (bodySourceManager.trackingBody.Value == null)
+        if (trackedBody == null)
         {
             return;
         }
@@ -139,32 +71,26 @@ public class PoseTracker : MonoBehaviour
         {
             foreach (BodyPartAngle ang in Pose.Angles)
             {
-                Windows.Kinect.Joint J1 = bodySourceManager.trackingBody.Value.Joints[ang.J1];
-                Windows.Kinect.Joint J2 = bodySourceManager.trackingBody.Value.Joints[ang.J2];
-                Windows.Kinect.Joint M = bodySourceManager.trackingBody.Value.Joints[ang.M];
-
-                Vector3 P1 = GetVector3FromJoint(J1);
-                Vector3 P2 = GetVector3FromJoint(J2);
-                Vector3 PM = GetVector3FromJoint(M);
-
-
-                float angle = Vector3.SignedAngle(P1 - PM, P2 - PM, Vector3.up);
+                Transform J1 = trackedBody.GetJoint(ang.J1);
+                Transform J2 = trackedBody.GetJoint(ang.J2);
+                Transform M = trackedBody.GetJoint(ang.M);
+                float angle = Vector3.SignedAngle(J1.position - M.position, J2.position - M.position, Vector3.up);
 
                 ang.needAngle = Mathf.Lerp(ang.needAngle, angle, 0.5f);
             }
 
             foreach (BodyPartDistance dis in Pose.Disctances)
             {
-                Windows.Kinect.Joint J1 = bodySourceManager.trackingBody.Value.Joints[dis.J1];
-                Windows.Kinect.Joint J2 = bodySourceManager.trackingBody.Value.Joints[dis.J2];
+                Transform J1 = trackedBody.GetJoint(dis.J1);
+                Transform J2 = trackedBody.GetJoint(dis.J2);
 
-                float actual = Vector3.Distance(GetVector3FromJoint(J1), GetVector3FromJoint(J2));
+                float actual = Vector3.Distance(J1.position, J2.position);
 
                 dis.needDistance = Mathf.Lerp(dis.needDistance, actual, 0.5f);
             }
         });
 
-        Observable.Timer(TimeSpan.FromSeconds(10)).Subscribe(_=>
+        Observable.Timer(TimeSpan.FromSeconds(10)).Subscribe(_ =>
         {
             disp.Dispose();
             recording = false;
@@ -174,5 +100,63 @@ public class PoseTracker : MonoBehaviour
     private void Update()
     {
         progressSlider.gameObject.SetActive(Tracking);
+
+        ProcessGesture();
+    }
+
+    private void ProcessGesture()
+    {
+        bodyTracked.Value = trackedBody != null;
+
+        if (trackedBody == null || recording)
+        {
+            trackingVolume.Value = 0;
+            return;
+        }
+
+        if (Tracking && !recording)
+        {
+
+            float difAngle = 0;
+            float difDistance = 0;
+
+            foreach (BodyPartAngle ang in Pose.Angles)
+            {
+
+                Transform J1 = trackedBody.GetJoint(ang.J1);
+                Transform J2 = trackedBody.GetJoint(ang.J2);
+                Transform M = trackedBody.GetJoint(ang.M);
+                float angle = Vector3.SignedAngle(J1.position - M.position, J2.position - M.position, Vector3.up);
+
+                //ang.needAngle = Mathf.Lerp(ang.needAngle, angle, Time.deltaTime);
+                difAngle += Mathf.Abs(angle - ang.needAngle)*ang.weight;
+            }
+
+            difAngle /= Pose.Angles.ToList().Select(a=>a.weight).Sum();
+
+            foreach (BodyPartDistance dis in Pose.Disctances)
+            {
+                Transform J1 = trackedBody.GetJoint(dis.J1);
+                Transform J2 = trackedBody.GetJoint(dis.J2);
+
+                float actual = Vector3.Distance(J1.position, J2.position);
+                difDistance += Mathf.Abs(dis.needDistance - actual)*dis.weight;
+            }
+            difDistance /= Pose.Disctances.ToList().Select(a => a.weight).Sum();
+
+      
+
+            if (difDistance < 0.5f && difAngle < 15)
+            {
+                trackingVolume.Value += Time.deltaTime * (1f/TrackTime);
+            }
+            else
+            {
+                trackingVolume.Value -= Time.deltaTime * (1f/UntrackTime);
+            }
+
+            trackingVolume.Value = Mathf.Clamp(trackingVolume.Value, 0f, 1f);
+
+        }
     }
 }

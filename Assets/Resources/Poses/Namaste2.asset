@@ -16,30 +16,30 @@ MonoBehaviour:
   - J1: 9
     J2: 5
     M: 10
-    needAngle: -129.80695
+    needAngle: 62.82775
   - J1: 4
     J2: 6
     M: 5
-    needAngle: 81.34548
+    needAngle: 141.92424
   - J1: 8
     J2: 10
     M: 9
-    needAngle: -87.810356
+    needAngle: 150.76282
   - J1: 21
     J2: 7
     M: 6
-    needAngle: -16.46873
+    needAngle: 11.769281
   - J1: 23
     J2: 11
     M: 10
-    needAngle: 20.818806
+    needAngle: -2.3150513
   Disctances:
   - J1: 10
     J2: 6
-    needDistance: 0.15219174
+    needDistance: 1.5299215
   - J1: 22
     J2: 24
-    needDistance: 0.10664331
+    needDistance: 1.049787
   - J1: 7
     J2: 11
-    needDistance: 0.10638279
+    needDistance: 1.4400673

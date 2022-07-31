@@ -8,6 +8,7 @@ using UnityEngine.Rendering.PostProcessing;
 using UnityEngine.UI;
 using UnityEngine.Video;
 using UniRx;
+using Newtonsoft.Json;
 
 public class TipPanel : MonoBehaviour
 {
@@ -53,8 +54,6 @@ public class TipPanel : MonoBehaviour
 
     public float Distortion = 0;
 
-    [SerializeField]
-    private TipsList Tips;
 
     [SerializeField]
     private PoseTracker poseTracker;
@@ -86,8 +85,10 @@ public class TipPanel : MonoBehaviour
     [SerializeField]
     private Animator videoQuad;
 
-    private List<Sprite> images = new List<Sprite>();
-    private List<string> videos = new List<string>();
+    private BuddaSettings settings;
+
+    private List<ContentInstance> content = new List<ContentInstance>();
+
     private bool ShowingContent 
     {
         get
@@ -103,6 +104,8 @@ public class TipPanel : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        LoadSettings();
+
         poseTracker.bodyTracked.Subscribe(v=>
         {
             if (!ShowingContent)
@@ -132,6 +135,26 @@ public class TipPanel : MonoBehaviour
         player.prepareCompleted += PrepareCompleted;
     }
 
+    private void LoadSettings()
+    {
+        string settingsPath = Path.Combine(Application.persistentDataPath, "Settings.txt");
+        if (!File.Exists(settingsPath))
+        {
+            settings = new BuddaSettings();
+            StreamWriter writer = new StreamWriter(settingsPath, false);
+            writer.WriteLine(JsonConvert.SerializeObject(settings));
+            writer.Close();
+        }
+        else
+        {
+            StreamReader reader = new StreamReader(settingsPath);
+            settings = JsonConvert.DeserializeObject<BuddaSettings>(reader.ReadToEnd());
+        }
+
+        poseTracker.TrackTime = settings.FillTime;
+        poseTracker.UntrackTime = settings.UnFillTime;
+    }
+
     private void PrepareCompleted(VideoPlayer source)
     {
         videoQuad.SetBool("Show", true);
@@ -153,8 +176,9 @@ public class TipPanel : MonoBehaviour
 
     private void LoadResources()
     {
-        string videoFolderPath = Path.Combine(Application.persistentDataPath, "Videos");
-        string imagesFolderPath = Path.Combine(Application.persistentDataPath, "Images");
+        string videoFolderPath = Path.Combine(Application.persistentDataPath, settings.VideosPath);
+        string imagesFolderPath = Path.Combine(Application.persistentDataPath, settings.ImagesPath);
+        string phrasesPath = Path.Combine(Application.persistentDataPath, settings.TextsPath);
 
         if (!Directory.Exists(videoFolderPath))
         {
@@ -165,16 +189,36 @@ public class TipPanel : MonoBehaviour
             Directory.CreateDirectory(imagesFolderPath);
         }
 
-        videos = Directory.GetFiles(videoFolderPath).ToList();
+        StreamReader reader = new StreamReader(phrasesPath);
+
+        string[] videosPathes = Directory.GetFiles(videoFolderPath);
         string[] imagesPathes = Directory.GetFiles(imagesFolderPath);
+        string[] phrases = reader.ReadToEnd().Split('\n');
+
 
         foreach (string s in imagesPathes)
         {
-            byte[] bytes = File.ReadAllBytes(s);
-            Texture2D texture = new Texture2D(1, 1);
-            texture.LoadImage(bytes);
-            images.Add(Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f)));
+            content.Add(new ContentInstance(s, ContentType.Image));     
         }
+        foreach (string s in videosPathes)
+        {
+            content.Add(new ContentInstance(s, ContentType.Video));
+        }
+        foreach (string s in phrases)
+        {
+            content.Add(new ContentInstance(s, ContentType.Text));
+        }
+
+        foreach (ContentInstance ci in content)
+        {
+            string c = ci.Content;
+            if (ci.ContentType == ContentType.Image)
+            {
+                c += " " + ci.Sprite;
+            }
+            Debug.Log(ci.ContentType+" "+c);
+        }
+
     }
 
     private void Update()
@@ -251,23 +295,37 @@ public class TipPanel : MonoBehaviour
         {
             StopCoroutine(ShowTipCoroutine);
         }
-      
 
-            string tip = Tips.Tips.OrderBy(t => Guid.NewGuid()).FirstOrDefault();
+        ContentInstance ci = null;
 
-            int v = 2; //UnityEngine.Random.Range(1, 3);
+        float max = settings.ImageChance + settings.TextChance + settings.VideoChance;
+        float rand = UnityEngine.Random.Range(0, max);
 
-            switch (v)
+        if (rand<=settings.ImageChance)
+        {
+            ci = content.Where(c => c.ContentType == ContentType.Image).OrderBy(c=>Guid.NewGuid()).FirstOrDefault();
+        }
+        else
+        if (rand<=settings.ImageChance+settings.VideoChance)
+        {
+            ci = content.Where(c => c.ContentType == ContentType.Video).OrderBy(c => Guid.NewGuid()).FirstOrDefault();
+        }
+
+        if (ci == null)
+        {
+            ci = content.Where(c => c.ContentType == ContentType.Text).OrderBy(c => Guid.NewGuid()).FirstOrDefault();
+        }
+
+            switch (ci.ContentType)
             {
-                case 0:
-                    ShowTipCoroutine = StartCoroutine(ShowTip(tip));
+                case ContentType.Text:
+                    ShowTipCoroutine = StartCoroutine(ShowTip(ci.Content));
                     break;
-                case 1:
-                    Sprite sprite = images.OrderBy(ss => Guid.NewGuid()).First();
-                    ShowImage(sprite);
+                case ContentType.Image:
+                    ShowImage(ci.Sprite);
                     break;
-                case 2:
-                    ShowVideoTip(videos.OrderBy(s=>Guid.NewGuid()).First());
+                case ContentType.Video:
+                    ShowVideoTip(ci.Content);
                     break;
             }         
        

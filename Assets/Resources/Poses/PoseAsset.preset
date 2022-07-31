@@ -1,0 +1,144 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!181963792 &2655988077585873504
+Preset:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: PoseAsset
+  m_TargetType:
+    m_NativeTypeID: 114
+    m_ManagedTypePPtr: {fileID: 11500000, guid: a5bd5d374eb774e4490b0b99e92a1982,
+      type: 3}
+    m_ManagedTypeFallback: 
+  m_Properties:
+  - target: {fileID: 0}
+    propertyPath: m_Enabled
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_EditorHideFlags
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_EditorClassIdentifier
+    value: 
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: Angles.Array.size
+    value: 6
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: Angles.Array.data[0].J1
+    value: 3
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: Angles.Array.data[0].J2
+    value: 4
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: Angles.Array.data[0].M
+    value: 5
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: Angles.Array.data[0].needAngle
+    value: 46.64975
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: Angles.Array.data[1].J1
+    value: 3
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: Angles.Array.data[1].J2
+    value: 8
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: Angles.Array.data[1].M
+    value: 9
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: Angles.Array.data[1].needAngle
+    value: 49.03444
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: Angles.Array.data[2].J1
+    value: 8
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: Angles.Array.data[2].J2
+    value: 10
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: Angles.Array.data[2].M
+    value: 9
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: Angles.Array.data[2].needAngle
+    value: 73.41261
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: Angles.Array.data[3].J1
+    value: 4
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: Angles.Array.data[3].J2
+    value: 5
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: Angles.Array.data[3].M
+    value: 7
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: Angles.Array.data[3].needAngle
+    value: 40.88054
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: Angles.Array.data[4].J1
+    value: 8
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: Angles.Array.data[4].J2
+    value: 9
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: Angles.Array.data[4].M
+    value: 11
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: Angles.Array.data[4].needAngle
+    value: -38.156384
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: Angles.Array.data[5].J1
+    value: 24
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: Angles.Array.data[5].J2
+    value: 11
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: Angles.Array.data[5].M
+    value: 10
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: Angles.Array.data[5].needAngle
+    value: -24.917217
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: Disctances.Array.size
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: Disctances.Array.data[0].J1
+    value: 7
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: Disctances.Array.data[0].J2
+    value: 11
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: Disctances.Array.data[0].needDistance
+    value: 1.5377803
+    objectReference: {fileID: 0}
+  m_ExcludedProperties: []
