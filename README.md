@@ -4,3 +4,5 @@ This project is an interactive visual installation that employs Kinect 2.0 and a
 
 Objective:
 The goal of this project is to explore the boundaries of interactive art through the use of modern technology. By combining gesture recognition with an engaging visual setup, the installation not only entertains but also prompts viewers to consider the role of technology in our lives and how it can be used to convey messages or wisdom in novel ways.
+
+![Mannequin with TV Head](EBudha.jpg)
